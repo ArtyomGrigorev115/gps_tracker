@@ -4,6 +4,10 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
 import com.artyom.gpstracker_hdbh.databinding.ActivityMainBinding
+import com.artyom.gpstracker_hdbh.fragments.MainFragment
+import com.artyom.gpstracker_hdbh.fragments.SettingsFragment
+import com.artyom.gpstracker_hdbh.fragments.TracksFragment
+import com.artyom.gpstracker_hdbh.utils.openFragment
 import java.security.AccessController.getContext
 
 class MainActivity : AppCompatActivity() {
@@ -13,21 +17,24 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
         onBottomNavClicks()
+
+        /*активация нового фрагмента*/
+        openFragment(MainFragment.newInstance())
     }
 
+    /**
+     * Переключение между фрагментами
+     *
+     */
     private fun onBottomNavClicks(){
+
         binding.bNan.setOnItemSelectedListener {
             when(it.itemId){
-                R.id.id_home -> Toast.makeText(this, "Home", Toast.LENGTH_SHORT).show()
-                R.id.id_tracks -> Toast.makeText(this, "Tracks", Toast.LENGTH_SHORT).show()
-                R.id.id_settings -> Toast.makeText(this, "Settings", Toast.LENGTH_SHORT).show()
+                R.id.id_home -> openFragment(MainFragment.newInstance())
+                R.id.id_tracks -> openFragment(TracksFragment.newInstance())
+                R.id.id_settings -> openFragment(SettingsFragment.newInstance())
             }
-
-
-
-
             true
         }
     }

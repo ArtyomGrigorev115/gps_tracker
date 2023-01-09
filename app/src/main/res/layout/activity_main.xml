@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-
+    <!-- Плейсхолдер для фрагментов   -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/placeHolder"
         android:layout_width="0dp"
