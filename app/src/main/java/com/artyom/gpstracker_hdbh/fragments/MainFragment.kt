@@ -12,6 +12,9 @@ import com.artyom.gpstracker_hdbh.databinding.FragmentMainBinding
 
 import org.osmdroid.config.Configuration
 import org.osmdroid.library.BuildConfig
+import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
+import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -47,8 +50,14 @@ class MainFragment : Fragment() {
         return binding.root
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        initOSM()
+    }
+
     /*Настройки библиотеки osmdroid OpenStreetMapTool
-    * В реальном времени качает карты из интернета и показывает их в MapView*/
+        * В реальном времени качает карты из интернета и показывает их в MapView*/
     private fun settingsOsm(){
         Configuration.getInstance().load(activity as AppCompatActivity,
             activity?.getSharedPreferences("osm_pref", Context.MODE_PRIVATE)
@@ -56,8 +65,36 @@ class MainFragment : Fragment() {
         Configuration.getInstance().userAgentValue = BuildConfig.APPLICATION_ID
     }
 
+    /*определяет местополоение пользователя на карте*/
+    private fun initOSM() = with(binding){
+        //Зум на карте
+        map.controller.setZoom(20.0)
 
+        //GPS-провидер, который возвращает местоположение
+        val mLocProvider = GpsMyLocationProvider(getActivity())
 
+        //Слой, который отрисовывывает местоположениена карте MapView
+        val mLocOverlay = MyLocationNewOverlay(mLocProvider, map)
+
+        //Включить определение местоположения устройства
+        mLocOverlay.enableMyLocation()
+
+        //Карта следует за пользователем, когда он передвигается
+        mLocOverlay.enableFollowLocation()
+
+        //метод запускается, как только местоположение было получено
+        mLocOverlay.runOnFirstFix {
+
+            //Очистка всех слоёв
+            map.overlays.clear()
+
+            //Добавить слои
+            map.overlays.add(mLocOverlay)
+        }
+
+        //показать нужную точку на карте
+       // map.controller.animateTo(GeoPoint(40.4167, -3.70325))
+    }
 
 
     companion object {
