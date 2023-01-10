@@ -1,12 +1,17 @@
 package com.artyom.gpstracker_hdbh.fragments
 
+import android.content.Context
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatActivity
 import com.artyom.gpstracker_hdbh.R
 import com.artyom.gpstracker_hdbh.databinding.FragmentMainBinding
+
+import org.osmdroid.config.Configuration
+import org.osmdroid.library.BuildConfig
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -34,12 +39,26 @@ class MainFragment : Fragment() {
     }*/
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        settingsOsm()
 
         // Inflate the layout for this fragment
         binding = FragmentMainBinding.inflate(inflater, container, false)
 
         return binding.root
     }
+
+    /*Настройки библиотеки osmdroid OpenStreetMapTool
+    * В реальном времени качает карты из интернета и показывает их в MapView*/
+    private fun settingsOsm(){
+        Configuration.getInstance().load(activity as AppCompatActivity,
+            activity?.getSharedPreferences("osm_pref", Context.MODE_PRIVATE)
+        )
+        Configuration.getInstance().userAgentValue = BuildConfig.APPLICATION_ID
+    }
+
+
+
+
 
     companion object {
         /**
