@@ -34,6 +34,13 @@
                 android:name="android.app.lib_name"
                 android:value="" />
         </activity>
+
+        <!--android:foregroundServiceType="location" для новых версий
+        что бы система его не убивала экономя заряд батареи-->
+        <service
+            android:name=".location.LocationService"
+            android:foregroundServiceType="location"
+            android:enabled="true"/>
     </application>
 
 </manifest>
