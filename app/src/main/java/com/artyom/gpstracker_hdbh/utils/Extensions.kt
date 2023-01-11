@@ -1,9 +1,10 @@
 package com.artyom.gpstracker_hdbh.utils
 
-import android.app.Activity
+import android.content.pm.PackageManager
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.artyom.gpstracker_hdbh.R
 
@@ -53,4 +54,27 @@ fun Fragment.showToast(text: String){
 * позазывает тост с сообщением*/
 fun AppCompatActivity.showToast(text: String){
     Toast.makeText(this, text, Toast.LENGTH_SHORT).show()
+}
+
+
+/**
+ * Check permission
+ *
+ * @param p название разрешения
+ * @return есть разрешение либо нет
+ */
+fun Fragment.checkPermission(p: String): Boolean{
+
+    /*0 - разрешение есть;
+    * PackageManager.PERMISSION_GRANTED = 0 */
+   /* val isPermissionGranted = when(PackageManager.PERMISSION_GRANTED){ //0
+        ContextCompat.checkSelfPermission( getActivity() as AppCompatActivity, p) *//* 0*//* -> true
+        else *//*!0*//* -> false
+    }
+    return isPermissionGranted*/
+
+    return when(PackageManager.PERMISSION_GRANTED){
+        ContextCompat.checkSelfPermission(activity as AppCompatActivity, p) -> true
+        else -> false
+    }
 }

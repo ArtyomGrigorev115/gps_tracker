@@ -1,14 +1,21 @@
 package com.artyom.gpstracker_hdbh.fragments
 
+import android.Manifest
 import android.content.Context
+import android.os.Build
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import com.artyom.gpstracker_hdbh.R
 import com.artyom.gpstracker_hdbh.databinding.FragmentMainBinding
+import com.artyom.gpstracker_hdbh.utils.checkPermission
+import com.artyom.gpstracker_hdbh.utils.showToast
 
 import org.osmdroid.config.Configuration
 import org.osmdroid.library.BuildConfig
@@ -16,10 +23,6 @@ import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
 
 /**
  * A simple [Fragment] subclass.
@@ -27,6 +30,8 @@ private const val ARG_PARAM2 = "param2"
  * create an instance of this fragment.
  */
 class MainFragment : Fragment() {
+
+    private lateinit var pLauncher: ActivityResultLauncher<Array<String>>
     private lateinit var binding: FragmentMainBinding
 
     // TODO: Rename and change types of parameters
@@ -43,17 +48,16 @@ class MainFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         settingsOsm()
-
         // Inflate the layout for this fragment
         binding = FragmentMainBinding.inflate(inflater, container, false)
-
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        initOSM()
+        registerPermissions()
+        checkLocPermission()
     }
 
     /*Настройки библиотеки osmdroid OpenStreetMapTool
@@ -94,6 +98,61 @@ class MainFragment : Fragment() {
 
         //показать нужную точку на карте
        // map.controller.animateTo(GeoPoint(40.4167, -3.70325))
+    }
+
+    /*инициализация  Лаунчера pLauncher*/
+    private fun registerPermissions(){
+
+        pLauncher = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()){
+
+            /*Если придёт null, то проверка на true, игаче if() не понимает
+            * Пользователь дал разрешения?*/
+            if(it[Manifest.permission.ACCESS_FINE_LOCATION] == true){
+                //Загрузка карты итд
+                initOSM()
+            }
+            else{
+                showToast("Вы не дали разрешения на использование местоположения!")
+            }
+        }
+    }
+
+    /*Проверка версии Андройда*/
+    private fun checkLocPermission(){
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q ){
+            checkPermissionAfter10()
+        }
+        else{
+            checkPermissionBefore10()
+        }
+    }
+
+
+    /*Для версии Ведройда 10++
+    * Проверка двух разрешений
+    * для активного и фонового режима работы*/
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private fun checkPermissionAfter10(){
+        if(checkPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+            && checkPermission(Manifest.permission.ACCESS_BACKGROUND_LOCATION) ){
+            showToast("проверка двух разрешений")
+            initOSM()
+        }
+        else{
+            showToast("Запук диалогового окна")
+            pLauncher.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_BACKGROUND_LOCATION))
+        }
+    }
+
+    /*Для Андройд версии ниже 10*/
+    private fun checkPermissionBefore10(){
+        if(checkPermission(Manifest.permission.ACCESS_FINE_LOCATION)){
+            initOSM()
+        }
+        else{
+            /**/
+            pLauncher.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION))
+        }
     }
 
 
