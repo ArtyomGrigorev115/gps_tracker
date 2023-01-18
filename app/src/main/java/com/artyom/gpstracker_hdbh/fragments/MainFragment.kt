@@ -11,6 +11,7 @@ import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.OnClickListener
 import android.view.ViewGroup
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -36,7 +37,7 @@ import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
  * create an instance of this fragment.
  */
 class MainFragment : Fragment() {
-
+    private var isServiceRunning = false
     private lateinit var pLauncher: ActivityResultLauncher<Array<String>>
     private lateinit var binding: FragmentMainBinding
 
@@ -69,6 +70,63 @@ class MainFragment : Fragment() {
         /*Запуск Сервиса*/
         //getActivity()?.startService(Intent(getActivity(),LocationService::class.java))
 
+        setOnClicks()
+        checkServiceState()
+
+
+    }
+
+    /*Повесить слушатель на нужные кнопки*/
+    private fun setOnClicks() = with(binding){
+        val listener = onClicks()
+        fStartStop.setOnClickListener(listener)
+
+    }
+
+    /*Слушатель кнопок*/
+    private fun onClicks(): View.OnClickListener{
+
+        return object: View.OnClickListener{
+            override fun onClick(view: View?) {
+                when(view!!.id){
+                    R.id.fStartStop -> startStopService()
+                }
+            }
+
+        }
+    }
+
+    /*запусить/остановить сервис
+    * сервис не запущен -> запустить
+    * сервис запущен -> остановить */
+    private fun startStopService(){
+        if(!isServiceRunning){
+            startLocService()
+        }
+        else{
+            activity?.stopService(Intent(activity,LocationService::class.java))
+            binding.fStartStop.setImageResource(R.drawable.ic_play)
+        }
+
+        /*В любом случае нужно поменять значение на противоположное:
+        * если сервис не запущен тогда false = !false
+        * если сервис уже был запущен тогда true = !true
+        * Если этого не сделаь, то сервис всегда будет перезапускаться, остановить его кнопкой не получится*/
+        isServiceRunning = !isServiceRunning
+    }
+
+    /*Проверяет состояие сервиса по его статической переменной LocationService.isRunning*/
+    private fun checkServiceState(){
+        isServiceRunning = LocationService.isRunning
+
+        if(isServiceRunning){
+            binding.fStartStop.setImageResource(R.drawable.ic_stop)
+        }
+
+    }
+
+    /*Метод запускает сервис*/
+    private  fun startLocService(){
         /*Если версия Андройд 8++
         * нужна дополнительная проверка на месте запуска сервиса
         * в любом случае  сервис запустится  в приоритетном фоновом режиме в методе LocationService.onStartCommand() -> startNotification()*/
@@ -78,6 +136,7 @@ class MainFragment : Fragment() {
         else{
             activity?.startService(Intent(activity,LocationService::class.java))
         }
+        binding.fStartStop.setImageResource(R.drawable.ic_stop)
     }
 
     override fun onResume() {

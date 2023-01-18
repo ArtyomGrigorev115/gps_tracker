@@ -30,6 +30,7 @@ class LocationService : Service() {
         * id - 10 идентификатор сервиса
         * notification - уведомление пользоватея в статус баре о том, что в фоновом режиме что-то работает */
         startNotification()
+        isRunning = true
         return START_STICKY
     }
 
@@ -41,6 +42,7 @@ class LocationService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         Log.d("MyLog", "Сервис уничтожился: onDestroy()")
+        isRunning = false
     }
 
     /*Запуск  сервиса  в приоритетном фоновом режиме
@@ -78,6 +80,7 @@ class LocationService : Service() {
 
     companion object{
         const val CHANNEL_ID = "channel_1"
+        var isRunning = false
     }
 
 }
