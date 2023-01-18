@@ -14,10 +14,12 @@ import android.os.Looper
 import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.artyom.gpstracker_hdbh.MainActivity
 import com.artyom.gpstracker_hdbh.R
 import com.google.android.gms.location.*
 import com.google.android.gms.location.Priority.PRIORITY_HIGH_ACCURACY
+import org.osmdroid.util.GeoPoint
 
 class LocationService : Service() {
 
@@ -31,6 +33,9 @@ class LocationService : Service() {
 
     /*запрос местоположения*/
     private lateinit var locRequest: LocationRequest
+
+    /*список точек маршрута*/
+    private lateinit var geoPointsList: ArrayList<GeoPoint>
 
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -57,8 +62,11 @@ class LocationService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+
+        geoPointsList = ArrayList()
         Log.d("MyLog", "Сервис запустился: onCreate()")
         initLocation()
+
 
 
     }
@@ -85,26 +93,43 @@ class LocationService : Service() {
 
             val currentLocation = locationResult.lastLocation
 
+            /*Вычисление пройденной дистанции путём суммирования разницы между  ними*/
             if(lastLocation != null && currentLocation != null){
-
 
                //Todo: на эмуляторе со скоростью проблеммы. Пока без проверки скорости
                /* if(currentLocation.speed > 0.2){
-                    *//*сумма разнци между старым местоположением и новым. Тем местоположением, которое прило в метод*//*
+                    *//*суммирование разнци между старым местоположением и новым. Тем местоположением, которое прило в метод*//*
                     distance += lastLocation?.distanceTo(currentLocation ?: lastLocation) ?: 0.0f
                 }*/
 
-                /*сумма разнци между старым местоположением и новым. Тем местоположением, которое прило в метод*/
                 distance += lastLocation?.distanceTo(currentLocation ?: lastLocation) ?: 0.0f
+
+                //при каждом обновлении местоположения точка добавляется в список
+                geoPointsList.add(GeoPoint(currentLocation.latitude, currentLocation.longitude))
+
+                val locModel = LocationModel(currentLocation.speed, distance, geoPointsList)
+
+                sendLocData(locModel)
             }
 
 
             /*новое местоположение смартфона записать в старое местоположение*/
             lastLocation = currentLocation
 
+
             Log.d("MyLog", "Местоположение: ${locationResult.lastLocation?.latitude}")
             Log.d("MyLog", "Дистанция: $distance")
         }
+    }
+
+    /*передаёт  сведения о местоположении, скорости, список точек
+     * (объёкт LocationModel) в MainFragment*/
+    private fun sendLocData(locModel: LocationModel){
+        val intent = Intent(LOC_MODEL_INTENT)
+        intent.putExtra(LOC_MODEL_INTENT, locModel)
+
+        LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(intent)
+
     }
 
 
@@ -189,6 +214,8 @@ class LocationService : Service() {
 
 
     companion object{
+
+        const val LOC_MODEL_INTENT = "loc_intent"
         const val CHANNEL_ID = "channel_1"
         var isRunning = false
 
