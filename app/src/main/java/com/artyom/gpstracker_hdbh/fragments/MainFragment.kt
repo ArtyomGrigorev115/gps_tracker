@@ -123,7 +123,7 @@ class MainFragment : Fragment() {
         /*если таймер работает, то остановить таймер*/
         timer?.cancel()
         timer = Timer()
-        startTime = System.currentTimeMillis()
+        startTime = LocationService.startTime
 
         /**/
         timer?.schedule(object : TimerTask(){
@@ -168,8 +168,9 @@ class MainFragment : Fragment() {
 
         if(isServiceRunning){
             binding.fStartStop.setImageResource(R.drawable.ic_stop)
+            /*Если сервис запущено, то и таймер должен идти*/
+            startTimer()
         }
-
     }
 
     /*Метод запускает сервис*/
@@ -184,6 +185,7 @@ class MainFragment : Fragment() {
             activity?.startService(Intent(activity,LocationService::class.java))
         }
         binding.fStartStop.setImageResource(R.drawable.ic_stop)
+        LocationService.startTime = System.currentTimeMillis()
         startTimer()
     }
 
