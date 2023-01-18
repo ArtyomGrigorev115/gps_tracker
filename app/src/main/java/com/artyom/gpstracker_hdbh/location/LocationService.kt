@@ -7,6 +7,7 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.Location
 import android.os.Build
 import android.os.IBinder
 import android.os.Looper
@@ -20,10 +21,15 @@ import com.google.android.gms.location.Priority.PRIORITY_HIGH_ACCURACY
 
 class LocationService : Service() {
 
+    /* суммированная дистанция*/
+    private var distance = 0.0f
+
+    private var lastLocation: Location? = null
+
     /*FusedLocationProviderClient*/
     private lateinit var locProvider: FusedLocationProviderClient
 
-    /**/
+    /*запрос местоположения*/
     private lateinit var locRequest: LocationRequest
 
 
@@ -77,10 +83,27 @@ class LocationService : Service() {
         override fun onLocationResult(locationResult: LocationResult) {
             super.onLocationResult(locationResult)
 
-            /*последнее известное местоположение смартфна*/
-            //locationResult.lastLocation
+            val currentLocation = locationResult.lastLocation
 
-            Log.d("MyLog", "Местонахождение ${locationResult.lastLocation?.latitude}")
+            if(lastLocation != null && currentLocation != null){
+
+
+               //Todo: на эмуляторе со скоростью проблеммы. Пока без проверки скорости
+               /* if(currentLocation.speed > 0.2){
+                    *//*сумма разнци между старым местоположением и новым. Тем местоположением, которое прило в метод*//*
+                    distance += lastLocation?.distanceTo(currentLocation ?: lastLocation) ?: 0.0f
+                }*/
+
+                /*сумма разнци между старым местоположением и новым. Тем местоположением, которое прило в метод*/
+                distance += lastLocation?.distanceTo(currentLocation ?: lastLocation) ?: 0.0f
+            }
+
+
+            /*новое местоположение смартфона записать в старое местоположение*/
+            lastLocation = currentLocation
+
+            Log.d("MyLog", "Местоположение: ${locationResult.lastLocation?.latitude}")
+            Log.d("MyLog", "Дистанция: $distance")
         }
     }
 
@@ -106,7 +129,7 @@ class LocationService : Service() {
         val notificationIntent = Intent(this, MainActivity::class.java)
         val pendingIntent = PendingIntent.getActivity(this,10, notificationIntent, 0)
 
-        /*При помощи Builder получаем объект уведомления*/
+        /*При помощи Builder получить объект уведомления*/
         val notification = NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.mipmap.ic_launcher)
             .setContentTitle("Tracker Running!")
@@ -119,7 +142,7 @@ class LocationService : Service() {
 
     }
 
-    /*инициализация объекта FusedLocationProviderClient*/
+    /*инициализация объекта FusedLocationProviderClient и LocationRequest*/
     private fun initLocation(){
         locRequest = LocationRequest.create()
 
