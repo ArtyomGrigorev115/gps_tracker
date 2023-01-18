@@ -19,8 +19,10 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.MutableLiveData
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.artyom.gpstracker_hdbh.MainViewModel
 import com.artyom.gpstracker_hdbh.R
 import com.artyom.gpstracker_hdbh.databinding.FragmentMainBinding
 import com.artyom.gpstracker_hdbh.location.LocationModel
@@ -51,11 +53,13 @@ class MainFragment : Fragment() {
     /*стартовое время таймера*/
     private var startTime = 0L
 
-    /*обновление textview таймера*/
-    private val timeData = MutableLiveData<String>()
+
 
     private lateinit var pLauncher: ActivityResultLauncher<Array<String>>
     private lateinit var binding: FragmentMainBinding
+
+    /*MainViewModel*/
+    private val model: MainViewModel by activityViewModels()
 
     // TODO: Rename and change types of parameters
    /* private var param1: String? = null
@@ -90,6 +94,7 @@ class MainFragment : Fragment() {
         checkServiceState()
         updateTime()
         registerLocReceiver()
+        locationUpdates()
 
 
     }
@@ -113,11 +118,28 @@ class MainFragment : Fragment() {
         }
     }
 
+    /*Инициализация Observer-a MainViewModel.locationUpdates*/
+    private fun locationUpdates(){
+
+        model.locationUpdates.observe(viewLifecycleOwner) {
+            val distance = "Distance: ${String.format("%.1f", it.distance)} m"
+            val velocity = "Velocity: ${String.format("%.1f", it.velocity)} m/s; ${
+                String.format(
+                    "%.1f",
+                    3.6 * it.velocity
+                )
+            } km/h"
+
+            binding.tvDistance.text = distance
+            binding.tvVelocity.text = velocity
+        }
+    }
+
     /*обновление TextView по таймеру*/
     private fun updateTime(){
 
         /*Observer - ждет, когда обновится информация*/
-        timeData.observe(viewLifecycleOwner){
+        model.timeData.observe(viewLifecycleOwner){
             binding.tvTime.text = it
         }
     }
@@ -136,7 +158,7 @@ class MainFragment : Fragment() {
 
                 /*перенести запуск на основной поток*/
                 activity?.runOnUiThread(){
-                    timeData.value = getCurrentTime()
+                    model.timeData.value = getCurrentTime()
                 }
             }
         },1000, 1000)
@@ -337,6 +359,9 @@ class MainFragment : Fragment() {
             if(intent?.action == LocationService.LOC_MODEL_INTENT){
                 val locModel = intent.getSerializableExtra(LocationService.LOC_MODEL_INTENT) as LocationModel
                 Log.d("MyLog", "В фрагменте ${this.javaClass::getName} LocalViewModel: ${locModel}")
+
+                /*передача новых данных в модель. Сразу запускает observer*/
+                model.locationUpdates.value = locModel
             }
         }
     }
