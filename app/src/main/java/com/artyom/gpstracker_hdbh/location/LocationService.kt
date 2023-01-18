@@ -90,9 +90,7 @@ class LocationService : Service() {
         /*получить результат о местоположении*/
         override fun onLocationResult(locationResult: LocationResult) {
             super.onLocationResult(locationResult)
-
             val currentLocation = locationResult.lastLocation
-
             /*Вычисление пройденной дистанции путём суммирования разницы между  ними*/
             if(lastLocation != null && currentLocation != null){
 
@@ -103,7 +101,6 @@ class LocationService : Service() {
                 }*/
 
                 distance += lastLocation?.distanceTo(currentLocation ?: lastLocation) ?: 0.0f
-
                 //при каждом обновлении местоположения точка добавляется в список
                 geoPointsList.add(GeoPoint(currentLocation.latitude, currentLocation.longitude))
 

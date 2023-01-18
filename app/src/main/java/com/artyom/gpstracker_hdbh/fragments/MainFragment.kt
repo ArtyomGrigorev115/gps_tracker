@@ -1,8 +1,10 @@
 package com.artyom.gpstracker_hdbh.fragments
 
 import android.Manifest
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
@@ -18,8 +20,10 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.MutableLiveData
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.artyom.gpstracker_hdbh.R
 import com.artyom.gpstracker_hdbh.databinding.FragmentMainBinding
+import com.artyom.gpstracker_hdbh.location.LocationModel
 import com.artyom.gpstracker_hdbh.location.LocationService
 import com.artyom.gpstracker_hdbh.utils.DialogManager
 import com.artyom.gpstracker_hdbh.utils.TimeUtils
@@ -85,6 +89,7 @@ class MainFragment : Fragment() {
         setOnClicks()
         checkServiceState()
         updateTime()
+        registerLocReceiver()
 
 
     }
@@ -311,7 +316,7 @@ class MainFragment : Fragment() {
            // showToast("GPS выключен!")
 
             DialogManager.showLocEnableDialog(activity as AppCompatActivity, object: DialogManager.Listener{
-                /*Имплементация интереса.
+                /*Имплементация интерфейса.
                 Логика обработки нажатия на кнопку вынесена из DialogManager в MainFragment
                 Тут открываем окно  приложения настроек смартфона*/
                 override fun onClick() {
@@ -323,6 +328,29 @@ class MainFragment : Fragment() {
         else{
             showToast("Location enabled!")
         }
+    }
+
+    /*приёмник широковещательных сообщений */
+    private val receiver = object: BroadcastReceiver(){
+        override fun onReceive(context: Context?, intent: Intent?) {
+
+            if(intent?.action == LocationService.LOC_MODEL_INTENT){
+                val locModel = intent.getSerializableExtra(LocationService.LOC_MODEL_INTENT) as LocationModel
+                Log.d("MyLog", "В фрагменте ${this.javaClass::getName} LocalViewModel: ${locModel}")
+            }
+        }
+    }
+
+    /*регистрация приёмника*/
+    private fun registerLocReceiver(){
+
+        val locFilter = IntentFilter(LocationService.LOC_MODEL_INTENT)
+        val locBroadcastManager = LocalBroadcastManager.getInstance(activity as AppCompatActivity)
+        locBroadcastManager.registerReceiver(
+            receiver,
+            //фильтр интентов, которые нужно принять
+            locFilter
+        )
     }
 
 
