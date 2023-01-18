@@ -18,6 +18,7 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import com.artyom.gpstracker_hdbh.R
 import com.artyom.gpstracker_hdbh.databinding.FragmentMainBinding
+import com.artyom.gpstracker_hdbh.location.LocationService
 import com.artyom.gpstracker_hdbh.utils.DialogManager
 import com.artyom.gpstracker_hdbh.utils.checkPermission
 import com.artyom.gpstracker_hdbh.utils.showToast
@@ -64,6 +65,19 @@ class MainFragment : Fragment() {
         Log.d("MyLog", "Вызван: onViewCreated()")
         registerPermissions()
       //  checkLocPermission()
+
+        /*Запуск Сервиса*/
+        //getActivity()?.startService(Intent(getActivity(),LocationService::class.java))
+
+        /*Если версия Андройд 8++
+        * нужна дополнительная проверка на месте запуска сервиса
+        * в любом случае  сервис запустится  в приоритетном фоновом режиме в методе LocationService.onStartCommand() -> startNotification()*/
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            activity?.startForegroundService(Intent(activity,LocationService::class.java))
+        }
+        else{
+            activity?.startService(Intent(activity,LocationService::class.java))
+        }
     }
 
     override fun onResume() {

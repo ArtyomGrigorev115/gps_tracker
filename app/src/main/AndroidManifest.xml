@@ -4,12 +4,16 @@
 
     <uses-permission android:name="android.permission.INTERNET"/>
 
+    <!---->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
     <!-- Необходимые разрешения на использование геолокации-->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
 
     <!--Андройд 10 и выше-->
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
+
 
     <application
         android:allowBackup="true"
