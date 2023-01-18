@@ -37,6 +37,8 @@ class LocationService : Service() {
     override fun onCreate() {
         super.onCreate()
         Log.d("MyLog", "Сервис запустился: onCreate()")
+
+
     }
 
     override fun onDestroy() {
