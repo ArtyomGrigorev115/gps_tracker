@@ -17,10 +17,12 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.MutableLiveData
 import com.artyom.gpstracker_hdbh.R
 import com.artyom.gpstracker_hdbh.databinding.FragmentMainBinding
 import com.artyom.gpstracker_hdbh.location.LocationService
 import com.artyom.gpstracker_hdbh.utils.DialogManager
+import com.artyom.gpstracker_hdbh.utils.TimeUtils
 import com.artyom.gpstracker_hdbh.utils.checkPermission
 import com.artyom.gpstracker_hdbh.utils.showToast
 
@@ -29,6 +31,8 @@ import org.osmdroid.library.BuildConfig
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
+import java.util.Timer
+import java.util.TimerTask
 
 
 /**
@@ -38,6 +42,14 @@ import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
  */
 class MainFragment : Fragment() {
     private var isServiceRunning = false
+    private var timer: Timer? = null
+
+    /*стартовое время таймера*/
+    private var startTime = 0L
+
+    /*обновление textview таймера*/
+    private val timeData = MutableLiveData<String>()
+
     private lateinit var pLauncher: ActivityResultLauncher<Array<String>>
     private lateinit var binding: FragmentMainBinding
 
@@ -72,6 +84,7 @@ class MainFragment : Fragment() {
 
         setOnClicks()
         checkServiceState()
+        updateTime()
 
 
     }
@@ -92,8 +105,41 @@ class MainFragment : Fragment() {
                     R.id.fStartStop -> startStopService()
                 }
             }
-
         }
+    }
+
+    /*обновление TextView по таймеру*/
+    private fun updateTime(){
+
+        /*Observer - ждет, когда обновится информация*/
+        timeData.observe(viewLifecycleOwner){
+            binding.tvTime.text = it
+        }
+    }
+
+
+    /*Инициализация таймера*/
+    private fun startTimer(){
+        /*если таймер работает, то остановить таймер*/
+        timer?.cancel()
+        timer = Timer()
+        startTime = System.currentTimeMillis()
+
+        /**/
+        timer?.schedule(object : TimerTask(){
+            override fun run() {
+
+                /*перенести запуск на основной поток*/
+                activity?.runOnUiThread(){
+                    timeData.value = getCurrentTime()
+                }
+            }
+        },1000, 1000)
+    }
+
+    /*Берёт текущее время*/
+    private fun getCurrentTime(): String{
+        return "Time: ${TimeUtils.getTime(System.currentTimeMillis() - startTime)}"
     }
 
     /*запусить/остановить сервис
@@ -106,6 +152,7 @@ class MainFragment : Fragment() {
         else{
             activity?.stopService(Intent(activity,LocationService::class.java))
             binding.fStartStop.setImageResource(R.drawable.ic_play)
+            timer?.cancel()
         }
 
         /*В любом случае нужно поменять значение на противоположное:
@@ -137,6 +184,7 @@ class MainFragment : Fragment() {
             activity?.startService(Intent(activity,LocationService::class.java))
         }
         binding.fStartStop.setImageResource(R.drawable.ic_stop)
+        startTimer()
     }
 
     override fun onResume() {
