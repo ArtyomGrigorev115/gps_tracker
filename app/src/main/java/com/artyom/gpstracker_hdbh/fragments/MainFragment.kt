@@ -126,12 +126,15 @@ class MainFragment : Fragment() {
             val velocity = "Velocity: ${String.format("%.1f", it.velocity)} m/s; ${
                 String.format(
                     "%.1f",
-                    3.6 * it.velocity
+                    3.6f * it.velocity
                 )
             } km/h"
+            val avgVelocity = "Average Velocity: ${getAverageSpeed(it.distance)} km/h"
+            Log.d("MyLog", "Средняя скорость $avgVelocity")
 
             binding.tvDistance.text = distance
             binding.tvVelocity.text = velocity
+            binding.tvAverageVel.text = avgVelocity
         }
     }
 
@@ -164,10 +167,23 @@ class MainFragment : Fragment() {
         },1000, 1000)
     }
 
+    /**
+     * Get average speed
+     *
+     * Вычисляет средн. скорость движения
+     * @param distance - дистанция
+     * @return средняя скорость движения
+     */
+    private fun getAverageSpeed(distance: Float): String{
+        return String.format("%.1f", 3.6f * (distance /  ((System.currentTimeMillis() - startTime) / 1000)) )
+    }
+
     /*Берёт текущее время*/
     private fun getCurrentTime(): String{
         return "Time: ${TimeUtils.getTime(System.currentTimeMillis() - startTime)}"
     }
+
+
 
     /*запусить/остановить сервис
     * сервис не запущен -> запустить

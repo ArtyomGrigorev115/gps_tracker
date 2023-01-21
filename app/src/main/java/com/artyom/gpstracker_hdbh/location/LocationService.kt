@@ -91,6 +91,7 @@ class LocationService : Service() {
         override fun onLocationResult(locationResult: LocationResult) {
             super.onLocationResult(locationResult)
             val currentLocation = locationResult.lastLocation
+
             /*Вычисление пройденной дистанции путём суммирования разницы между  ними*/
             if(lastLocation != null && currentLocation != null){
 
@@ -105,6 +106,7 @@ class LocationService : Service() {
                 geoPointsList.add(GeoPoint(currentLocation.latitude, currentLocation.longitude))
 
                 val locModel = LocationModel(currentLocation.speed, distance, geoPointsList)
+                Log.d("MyLog", "Скорость в LocationService ${currentLocation.speed}")
 
                 sendLocData(locModel)
             }
