@@ -50,8 +50,10 @@ import java.util.TimerTask
  * create an instance of this fragment.
  */
 class MainFragment : Fragment() {
+    private var locationModel: LocationModel? = null
+
     /*Сущность*/
-    private var trackItem: TrackItem? = null
+   // private var trackItem: TrackItem? = null
 
 
     private var polyline: Polyline? = null
@@ -134,14 +136,16 @@ class MainFragment : Fragment() {
             binding.tvAverageVel.text = avgVelocity
 
             /* Как только данные изменились, то сразу собираем Entity*/
-            trackItem = TrackItem(
+          /*  trackItem = TrackItem(
                 null,
                 getCurrentTime(),
                 TimeUtils.getDate(),
                 String.format("%.1f", it.distance / 1000),
                 getAverageSpeed(it.distance),
-                ""
-            )
+                geopointsToString(it.geoPointList)
+            )*/
+
+            locationModel = it
 
             /*обновление списка пройденных точек маршрута*/
             updatePolyline(it.geoPointList)
@@ -194,6 +198,18 @@ class MainFragment : Fragment() {
     }
 
 
+    private fun geopointsToString(list: List<GeoPoint>): String{
+        val sb = java.lang.StringBuilder()
+        list.forEach {
+            sb.append("${it.latitude},${it.longitude}/")
+        }
+
+
+        Log.d("MyLog", "geopointsToString(): $sb")
+        return sb.toString()
+    }
+
+
 
     /*запусить/остановить сервис
     * сервис не запущен -> запустить
@@ -206,7 +222,8 @@ class MainFragment : Fragment() {
             activity?.stopService(Intent(activity,LocationService::class.java))
             binding.fStartStop.setImageResource(R.drawable.ic_play)
             timer?.cancel()
-            DialogManager.showSaveDialog(requireContext(), trackItem, object : DialogManager.Listener{
+
+            DialogManager.showSaveDialog(requireContext(), getTrackItem(), object : DialogManager.Listener{
                 override fun onClick() {
                     showToast("Маршрут сохранен!")
                 }
@@ -217,9 +234,23 @@ class MainFragment : Fragment() {
         /*В любом случае нужно поменять значение на противоположное:
         * если сервис не запущен тогда false = !false
         * если сервис уже был запущен тогда true = !true
-        * Если этого не сделаь, то сервис всегда будет перезапускаться, остановить его кнопкой не получится*/
+        * Если этого не сделать, то сервис всегда будет перезапускаться, остановить его кнопкой не получится*/
         isServiceRunning = !isServiceRunning
     }
+
+    /*Метод собирает экземплр сущности*/
+    private fun getTrackItem(): TrackItem{
+       val  trackItem: TrackItem = TrackItem(
+            null,
+            getCurrentTime(),
+            TimeUtils.getDate(),
+            String.format("%.1f", locationModel?.distance?.div(1000) ?: 0),
+            getAverageSpeed(locationModel?.distance ?: 0.0F),
+            geopointsToString(locationModel?.geoPointList ?: listOf())
+        )
+        return trackItem
+    }
+
 
     /*Проверяет состояие сервиса по его статической переменной LocationService.isRunning*/
     private fun checkServiceState(){
