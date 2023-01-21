@@ -2,8 +2,12 @@ package com.artyom.gpstracker_hdbh.utils
 
 import android.app.AlertDialog
 import android.content.Context
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
+import android.view.LayoutInflater
 import android.widget.Toast
 import com.artyom.gpstracker_hdbh.R
+import com.artyom.gpstracker_hdbh.databinding.SaveDialogBinding
 
 object DialogManager {
 
@@ -11,7 +15,7 @@ object DialogManager {
     * что бы пользователь мог включить GPS*/
     fun showLocEnableDialog(context: Context, listener: DialogManager.Listener){
 
-        /*создать стандартный диалог с сьандартной разметкой*/
+        /*создать стандартный диалог с стандартной разметкой*/
         val builder = AlertDialog.Builder(context)
         val dialog = builder.create()
 
@@ -32,6 +36,31 @@ object DialogManager {
         }
 
         dialog.show()
+
+    }
+
+    fun showSaveDialog(context: Context, listener: DialogManager.Listener){
+
+        /*диалог сохранения*/
+        val builder = AlertDialog.Builder(context)
+        val binding = SaveDialogBinding.inflate(LayoutInflater.from(context),null, false)
+        builder.setView(binding.root)
+        val dialog = builder.create()
+
+        binding.apply {
+            bSave.setOnClickListener{
+                listener.onClick()
+                dialog.dismiss()
+            }
+
+            bCancel.setOnClickListener {
+
+                dialog.dismiss()
+            }
+        }
+        dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        dialog.show()
+
 
     }
 
