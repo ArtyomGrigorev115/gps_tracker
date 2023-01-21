@@ -8,6 +8,7 @@ import android.view.LayoutInflater
 import android.widget.Toast
 import com.artyom.gpstracker_hdbh.R
 import com.artyom.gpstracker_hdbh.databinding.SaveDialogBinding
+import com.artyom.gpstracker_hdbh.db.TrackItem
 
 object DialogManager {
 
@@ -39,7 +40,7 @@ object DialogManager {
 
     }
 
-    fun showSaveDialog(context: Context, listener: DialogManager.Listener){
+    fun showSaveDialog(context: Context, item: TrackItem?, listener: DialogManager.Listener){
 
         /*диалог сохранения*/
         val builder = AlertDialog.Builder(context)
@@ -48,6 +49,17 @@ object DialogManager {
         val dialog = builder.create()
 
         binding.apply {
+
+
+            val time = "${item?.time} s"
+            val speed = "${item?.velocity} km/h"
+            val distance = "${item?.distance} km"
+
+            /*Текстовые поля*/
+            tvTime.text = time
+            tvSpeed.text = speed
+            tvDistance.text = distance
+
             bSave.setOnClickListener{
                 listener.onClick()
                 dialog.dismiss()

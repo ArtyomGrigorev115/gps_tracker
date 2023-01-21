@@ -9,6 +9,8 @@ object TimeUtils {
     @SuppressLint("SimpleDateFormat")
     private val timeFormatter = SimpleDateFormat("HH:mm:ss")
 
+    private val dateFormatter = SimpleDateFormat("dd/MM/yyyy HH:mm")
+
 
     /*Из системного времени в форматированное время*/
     fun getTime(timeInMillis: Long): String{
@@ -24,5 +26,12 @@ object TimeUtils {
         return timeFormatter.format(date)
 
     }
+
+    fun getDate(): String{
+        val calendar = Calendar.getInstance()
+        return dateFormatter.format(calendar.getTime())
+    }
+
+
 
 }

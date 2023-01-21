@@ -26,6 +26,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.artyom.gpstracker_hdbh.MainViewModel
 import com.artyom.gpstracker_hdbh.R
 import com.artyom.gpstracker_hdbh.databinding.FragmentMainBinding
+import com.artyom.gpstracker_hdbh.db.TrackItem
 import com.artyom.gpstracker_hdbh.location.LocationModel
 import com.artyom.gpstracker_hdbh.location.LocationService
 import com.artyom.gpstracker_hdbh.utils.DialogManager
@@ -49,6 +50,10 @@ import java.util.TimerTask
  * create an instance of this fragment.
  */
 class MainFragment : Fragment() {
+    /*Сущность*/
+    private var trackItem: TrackItem? = null
+
+
     private var polyline: Polyline? = null
     private var isServiceRunning = false
     private var timer: Timer? = null
@@ -127,6 +132,18 @@ class MainFragment : Fragment() {
             binding.tvDistance.text = distance
             binding.tvVelocity.text = velocity
             binding.tvAverageVel.text = avgVelocity
+
+            /* Как только данные изменились, то сразу собираем Entity*/
+            trackItem = TrackItem(
+                null,
+                getCurrentTime(),
+                TimeUtils.getDate(),
+                String.format("%.1f", it.distance / 1000),
+                getAverageSpeed(it.distance),
+                ""
+            )
+
+            /*обновление списка пройденных точек маршрута*/
             updatePolyline(it.geoPointList)
         }
     }
@@ -189,7 +206,7 @@ class MainFragment : Fragment() {
             activity?.stopService(Intent(activity,LocationService::class.java))
             binding.fStartStop.setImageResource(R.drawable.ic_play)
             timer?.cancel()
-            DialogManager.showSaveDialog(requireContext(), object : DialogManager.Listener{
+            DialogManager.showSaveDialog(requireContext(), trackItem, object : DialogManager.Listener{
                 override fun onClick() {
                     showToast("Маршрут сохранен!")
                 }
