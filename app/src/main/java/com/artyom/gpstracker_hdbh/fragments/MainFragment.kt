@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.graphics.Color
 import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
@@ -35,6 +36,7 @@ import com.artyom.gpstracker_hdbh.utils.showToast
 import org.osmdroid.config.Configuration
 import org.osmdroid.library.BuildConfig
 import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.overlay.Polyline
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 import java.util.Timer
@@ -47,13 +49,13 @@ import java.util.TimerTask
  * create an instance of this fragment.
  */
 class MainFragment : Fragment() {
+    private var polyline: Polyline? = null
     private var isServiceRunning = false
     private var timer: Timer? = null
+    private var firstStart = true
 
     /*стартовое время таймера*/
     private var startTime = 0L
-
-
 
     private lateinit var pLauncher: ActivityResultLauncher<Array<String>>
     private lateinit var binding: FragmentMainBinding
@@ -61,17 +63,7 @@ class MainFragment : Fragment() {
     /*MainViewModel*/
     private val model: MainViewModel by activityViewModels()
 
-    // TODO: Rename and change types of parameters
-   /* private var param1: String? = null
-    private var param2: String? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }*/
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         settingsOsm()
@@ -135,6 +127,7 @@ class MainFragment : Fragment() {
             binding.tvDistance.text = distance
             binding.tvVelocity.text = velocity
             binding.tvAverageVel.text = avgVelocity
+            updatePolyline(it.geoPointList)
         }
     }
 
@@ -258,6 +251,9 @@ class MainFragment : Fragment() {
 
     /*определяет местополоение пользователя на карте*/
     private fun initOSM() = with(binding){
+        //Полилиния маршрута
+        polyline = Polyline()
+        polyline?.outlinePaint?.color = Color.BLUE
         //Зум на карте
         map.controller.setZoom(20.0)
 
@@ -281,6 +277,8 @@ class MainFragment : Fragment() {
 
             //Добавить слои
             map.overlays.add(mLocOverlay)
+            //Добавить слой полилинию
+            map.overlays.add(polyline)
         }
 
         //показать нужную точку на карте
@@ -392,6 +390,40 @@ class MainFragment : Fragment() {
             //фильтр интентов, которые нужно принять
             locFilter
         )
+    }
+
+    /*Метод добавляет точки в список точек*/
+    private fun addPoint(list: List<GeoPoint>){
+        polyline?.addPoint(list[list.size - 1])
+    }
+
+    /*Метод подгружает все точки после того, как приложение закрыли и заново открыли
+    * сервис всё это время работал, но точки в полилинию не добавлялись*/
+    private fun fillPolyline(list: List<GeoPoint>){
+        list.forEach{
+            polyline?.addPoint(it)
+        }
+    }
+
+    /*Метод определяет нужно ли подгружать точки из массива
+    * если приложение было закрыто/открыто, то грузит точки и больше fillPolyline() не вызвается,
+    * а вызывается метод addPoint(), который добавляет по одной точке в список*/
+    private fun updatePolyline(list: List<GeoPoint>){
+        if(list.size > 1 && firstStart){
+            fillPolyline(list)
+            firstStart = false
+        }
+        else{
+            addPoint(list)
+        }
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+        Log.d("MyLog", "MainFragment отсоединился")
+
+        LocalBroadcastManager.getInstance(activity as AppCompatActivity).unregisterReceiver(receiver)
+
     }
 
 
