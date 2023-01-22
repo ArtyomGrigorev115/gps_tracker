@@ -9,7 +9,7 @@ import androidx.room.RoomDatabase
  abstract class MainDb : RoomDatabase() {
 
     /*DAO*/
-
+    abstract fun getDao(): Dao
 
 
     companion object{
