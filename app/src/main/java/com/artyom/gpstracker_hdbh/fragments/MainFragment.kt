@@ -23,6 +23,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.MutableLiveData
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.artyom.gpstracker_hdbh.MainApp
 import com.artyom.gpstracker_hdbh.MainViewModel
 import com.artyom.gpstracker_hdbh.R
 import com.artyom.gpstracker_hdbh.databinding.FragmentMainBinding
@@ -68,7 +69,14 @@ class MainFragment : Fragment() {
     private lateinit var binding: FragmentMainBinding
 
     /*MainViewModel*/
-    private val model: MainViewModel by activityViewModels()
+    private val model: MainViewModel by activityViewModels{
+
+        /*В данном случае контекстом выступает класс MainApp : Application в котором инициализируется
+        * экземпляр базы данных. Его и передаём в MainViewModel*/
+        MainViewModel.ViewModelFactory((requireContext().applicationContext as MainApp).database)
+    }
+
+
 
 
 
@@ -94,6 +102,11 @@ class MainFragment : Fragment() {
         updateTime()
         registerLocReceiver()
         locationUpdates()
+
+        /*проверка БД*/
+        model.tracks.observe(viewLifecycleOwner){
+            Log.d("MyLog", "Элементов в базе данных: ${it.size}")
+        }
 
 
     }
@@ -223,9 +236,12 @@ class MainFragment : Fragment() {
             binding.fStartStop.setImageResource(R.drawable.ic_play)
             timer?.cancel()
 
-            DialogManager.showSaveDialog(requireContext(), getTrackItem(), object : DialogManager.Listener{
+
+            val track = getTrackItem()
+            DialogManager.showSaveDialog(requireContext(), track, object : DialogManager.Listener{
                 override fun onClick() {
-                    showToast("Маршрут сохранен!")
+                    showToast("Маршрут сохранен в базу!")
+                    model.insertTrack(track)
                 }
 
             })
