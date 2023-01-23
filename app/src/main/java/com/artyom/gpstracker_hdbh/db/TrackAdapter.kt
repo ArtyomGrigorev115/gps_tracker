@@ -3,7 +3,6 @@ package com.artyom.gpstracker_hdbh.db
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
-import android.view.View.OnClickListener
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -54,7 +53,7 @@ class TrackAdapter(private val listener: Listener): ListAdapter<TrackItem, Track
 
             trackTemp = track
 
-            val speed = "${track.velocity} km/h"
+            val speed = "${track.speed} km/h"
             val time = "${track.time} m"
             val distance = "${track.distance} km"
 

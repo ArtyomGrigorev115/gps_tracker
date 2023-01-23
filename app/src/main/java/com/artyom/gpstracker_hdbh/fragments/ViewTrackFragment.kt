@@ -1,12 +1,20 @@
 package com.artyom.gpstracker_hdbh.fragments
 
+import android.content.Context
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.artyom.gpstracker_hdbh.databinding.FragmentMainBinding
+import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.activityViewModels
+import com.artyom.gpstracker_hdbh.MainApp
+import com.artyom.gpstracker_hdbh.MainViewModel
 import com.artyom.gpstracker_hdbh.databinding.ViewTrackBinding
+import org.osmdroid.config.Configuration
+import org.osmdroid.library.BuildConfig
+import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.overlay.Polyline
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -19,26 +27,58 @@ private const val ARG_PARAM2 = "param2"
  * create an instance of this fragment.
  */
 class ViewTrackFragment : Fragment() {
+
+    /*MainViewModel*/
+    private val model: MainViewModel by activityViewModels{
+
+        /*В данном случае контекстом выступает класс MainApp : Application в котором инициализируется
+        * экземпляр базы данных. Его и передаём в MainViewModel*/
+        MainViewModel.ViewModelFactory((requireContext().applicationContext as MainApp).database)
+    }
+
     private lateinit var binding: ViewTrackBinding
 
-    // TODO: Rename and change types of parameters
-   /* private var param1: String? = null
-    private var param2: String? = null
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }*/
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-
+        settingsOsm()
         // Inflate the layout for this fragment
         binding = ViewTrackBinding.inflate(inflater, container, false)
 
         return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        getTrack()
+    }
+
+    /*Из лайфдата вытаскием информацио из TrackItem*/
+    private fun getTrack() = with(binding){
+        model.currentTrack.observe(viewLifecycleOwner){
+
+            val speed = "Average speed: ${it.speed} km/h"
+            val distance = "Distance: ${it.distance} km"
+            tvData.text = it.date
+            tvTime.text = it.time
+            tvAverageVel.text = speed
+            tvDistance.text = distance
+        }
+    }
+    /*Метод собирает  Полилинию по координатам из массива*/
+    /*private fun getPolyline(geoPoints: String): Polyline {
+        val list = geoPoints.split("/") // lat:44.556, lon: -7.455
+
+    }*/
+
+
+
+    /*Настройки библиотеки osmdroid OpenStreetMapTool
+           * В реальном времени качает карты из интернета и показывает их в MapView*/
+    private fun settingsOsm(){
+        Configuration.getInstance().load(activity as AppCompatActivity,
+            activity?.getSharedPreferences("osm_pref", Context.MODE_PRIVATE)
+        )
+        Configuration.getInstance().userAgentValue = BuildConfig.APPLICATION_ID
     }
 
     companion object {

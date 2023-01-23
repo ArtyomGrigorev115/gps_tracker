@@ -79,7 +79,10 @@ class TracksFragment : Fragment(), TrackAdapter.Listener {
 
         when(type){
             TrackAdapter.ClickType.DELETE -> model.deleteTrack(track)
-            TrackAdapter.ClickType.OPEN -> openFragment(ViewTrackFragment.newInstance())
+            TrackAdapter.ClickType.OPEN -> {
+                model.currentTrack.value = track
+                openFragment(ViewTrackFragment.newInstance())
+            }
         }
 
     }

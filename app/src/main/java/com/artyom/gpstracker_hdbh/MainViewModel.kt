@@ -17,6 +17,9 @@ class MainViewModel(db: MainDb) : ViewModel() {
     /*обновление textview таймера*/
     val timeData = MutableLiveData<String>()
 
+    /*Передать информацию из TrackItem в ViewTrackFragment*/
+    val currentTrack = MutableLiveData<TrackItem>()
+
     val tracks = dao.getAllTracks().asLiveData()
 
     /*Метод добавляет запись в БД*/

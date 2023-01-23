@@ -5,7 +5,6 @@ import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.view.LayoutInflater
-import android.widget.Toast
 import com.artyom.gpstracker_hdbh.R
 import com.artyom.gpstracker_hdbh.databinding.SaveDialogBinding
 import com.artyom.gpstracker_hdbh.db.TrackItem
@@ -52,7 +51,7 @@ object DialogManager {
 
 
             val time = "${item?.time} s"
-            val speed = "${item?.velocity} km/h"
+            val speed = "${item?.speed} km/h"
             val distance = "${item?.distance} km"
 
             /*Текстовые поля*/
