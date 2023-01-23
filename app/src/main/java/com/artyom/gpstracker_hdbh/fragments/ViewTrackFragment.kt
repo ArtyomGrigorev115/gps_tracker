@@ -15,6 +15,7 @@ import org.osmdroid.config.Configuration
 import org.osmdroid.library.BuildConfig
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.overlay.Polyline
+import java.security.Policy
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -62,13 +63,38 @@ class ViewTrackFragment : Fragment() {
             tvTime.text = it.time
             tvAverageVel.text = speed
             tvDistance.text = distance
+
+            /*отрисовка линии маршрута на карте*/
+            val  polyline = getPolyline(it.geoPoints)
+            map.overlays.add(polyline)
+
+            goToStartPosition(polyline.actualPoints[0])
         }
     }
+
+    /*Зум на точку начала маршрута*/
+    private fun goToStartPosition(startPosition: GeoPoint){
+
+        /*сделать зум на начало маршрута*/
+        binding.map.controller.zoomTo(18.0)
+        binding.map.controller.animateTo(startPosition)
+    }
+
     /*Метод собирает  Полилинию по координатам из массива*/
-    /*private fun getPolyline(geoPoints: String): Polyline {
+    private fun getPolyline(geoPoints: String): Polyline {
+        val polyline = Polyline()
         val list = geoPoints.split("/") // lat:44.556, lon: -7.455
 
-    }*/
+        list.forEach {
+            if(it.isEmpty()) return@forEach
+            val points = it.split(",") // 44.44 -7.34
+
+            polyline.addPoint(GeoPoint(points[0].toDouble(), points[1].toDouble()))
+        }
+        return polyline
+    }
+
+
 
 
 
