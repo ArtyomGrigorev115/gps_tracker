@@ -15,6 +15,7 @@ import com.artyom.gpstracker_hdbh.databinding.TracksBinding
 import com.artyom.gpstracker_hdbh.databinding.ViewTrackBinding
 import com.artyom.gpstracker_hdbh.db.TrackAdapter
 import com.artyom.gpstracker_hdbh.db.TrackItem
+import com.artyom.gpstracker_hdbh.utils.openFragment
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -72,9 +73,15 @@ class TracksFragment : Fragment(), TrackAdapter.Listener {
     }
 
     /*Метод удаляет маршруты по нажатию*/
-    override fun onClick(track: TrackItem) {
+    override fun onClick(track: TrackItem, type: TrackAdapter.ClickType) {
         Log.d("MyLog", "TrackFragment кнопка удалить работает: Удалить маршрут с id = ${track.id}")
-        model.deleteTrack(track)
+        Log.d("MyLog", "TrackFragment тип нажатия = $type")
+
+        when(type){
+            TrackAdapter.ClickType.DELETE -> model.deleteTrack(track)
+            TrackAdapter.ClickType.OPEN -> openFragment(ViewTrackFragment.newInstance())
+        }
+
     }
 
     companion object {

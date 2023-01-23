@@ -23,15 +23,29 @@ class TrackAdapter(private val listener: Listener): ListAdapter<TrackItem, Track
         private var trackTemp: TrackItem? = null
 
         init{
+            /*Срабатывает на удаление*/
             binding.ibDelete.setOnClickListener(this)
+
+            /*Тот же самый слушатель установлен и на запуск фрагмента ViewTrackFragment */
+            binding.item.setOnClickListener(this)
+
         }
 
 
-        override fun onClick(v: View?) {
+        override fun onClick(view: View?) {
             /*Если маршрут не построен, но кнопка нажата, то trackTemp = null
             * безопасно. как только будет маршрут*/
             Log.d("MyLog", "TrackAdapter.Holder::onClick()")
-            trackTemp?.let() { listener.onClick(it) }
+
+            /*Проверка что нужно сделать */
+            val type =  when(view!!.id){
+                R.id.ibDelete -> ClickType.DELETE
+                R.id.item -> ClickType.OPEN
+                else -> ClickType.OPEN
+
+            }
+            trackTemp?.let() { listener.onClick(it, type) }
+
         }
 
 
@@ -80,6 +94,13 @@ class TrackAdapter(private val listener: Listener): ListAdapter<TrackItem, Track
     /*Интерфейс, который будет реализован в TrackFragment*/
     interface Listener{
         /*Метод удаляет маршрут по нажатию на кнопку удалить*/
-        fun onClick(track: TrackItem)
+        fun onClick(track: TrackItem, type: ClickType)
+    }
+
+    /*Агрегирует в себе тип нажатия.
+    * Либо это кнопка, либо элмент списка*/
+    enum class ClickType{
+        DELETE,
+        OPEN
     }
 }
