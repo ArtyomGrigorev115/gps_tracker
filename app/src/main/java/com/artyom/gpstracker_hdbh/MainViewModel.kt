@@ -24,6 +24,11 @@ class MainViewModel(db: MainDb) : ViewModel() {
         dao.insertTrack(trackItem)
     }
 
+    /*Метод удаляет запись из БД*/
+    fun deleteTrack(trackItem: TrackItem) = viewModelScope.launch {
+        dao.deleteTrack(trackItem)
+    }
+
 
     /*Статическая фабрика, котора создаёт MainViewModel с конструктором в который передаётся
     * экземпляр базы данных */

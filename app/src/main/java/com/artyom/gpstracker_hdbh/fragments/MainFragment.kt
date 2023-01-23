@@ -104,9 +104,9 @@ class MainFragment : Fragment() {
         locationUpdates()
 
         /*проверка БД*/
-        model.tracks.observe(viewLifecycleOwner){
+       /* model.tracks.observe(viewLifecycleOwner){
             Log.d("MyLog", "Элементов в базе данных: ${it.size}")
-        }
+        }*/
 
 
     }
