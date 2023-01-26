@@ -1,6 +1,7 @@
 package com.artyom.gpstracker_hdbh.fragments
 
 import android.content.Context
+import android.graphics.Color
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -9,6 +10,7 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.fragment.app.activityViewModels
+import androidx.preference.PreferenceManager
 import com.artyom.gpstracker_hdbh.MainApp
 import com.artyom.gpstracker_hdbh.MainViewModel
 import com.artyom.gpstracker_hdbh.R
@@ -32,6 +34,8 @@ private const val ARG_PARAM2 = "param2"
  */
 class ViewTrackFragment : Fragment() {
 
+    private var startPoint: GeoPoint? = null
+
     /*MainViewModel*/
     private val model: MainViewModel by activityViewModels{
 
@@ -54,6 +58,13 @@ class ViewTrackFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         getTrack()
+
+        binding.fCenter.setOnClickListener(){
+            if(startPoint != null){
+                binding.map.controller.animateTo(startPoint)
+            }
+
+        }
     }
 
     /*Из лайфдата вытаскием информацио из TrackItem*/
@@ -73,6 +84,7 @@ class ViewTrackFragment : Fragment() {
 
             setMarkers(polyline.actualPoints)
             goToStartPosition(polyline.actualPoints[0])
+            startPoint = polyline.actualPoints[0]
         }
     }
 
@@ -84,6 +96,7 @@ class ViewTrackFragment : Fragment() {
         binding.map.controller.animateTo(startPosition)
     }
 
+    /*Метод устанавливает маркеры на карту*/
     private fun setMarkers(list: List<GeoPoint>) = with(binding){
         val startMarker = Marker(map)
         val finishMarker = Marker(map)
@@ -104,6 +117,10 @@ class ViewTrackFragment : Fragment() {
     /*Метод собирает  Полилинию по координатам из массива*/
     private fun getPolyline(geoPoints: String): Polyline {
         val polyline = Polyline()
+        polyline.outlinePaint.color = Color.parseColor(PreferenceManager.getDefaultSharedPreferences(requireContext())
+            .getString("color_key", "#FF009EDA")
+        )
+
         val list = geoPoints.split("/") // lat:44.556, lon: -7.455
 
         list.forEach {

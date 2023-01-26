@@ -23,6 +23,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.MutableLiveData
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import androidx.preference.PreferenceManager
 import com.artyom.gpstracker_hdbh.MainApp
 import com.artyom.gpstracker_hdbh.MainViewModel
 import com.artyom.gpstracker_hdbh.R
@@ -64,6 +65,9 @@ class MainFragment : Fragment() {
 
     /*стартовое время таймера*/
     private var startTime = 0L
+
+    /*местоположение*/
+    private  lateinit var mLocOverlay: MyLocationNewOverlay
 
     private lateinit var pLauncher: ActivityResultLauncher<Array<String>>
     private lateinit var binding: FragmentMainBinding
@@ -115,6 +119,7 @@ class MainFragment : Fragment() {
     private fun setOnClicks() = with(binding){
         val listener = onClicks()
         fStartStop.setOnClickListener(listener)
+        fCenter.setOnClickListener(listener)
 
     }
 
@@ -125,9 +130,16 @@ class MainFragment : Fragment() {
             override fun onClick(view: View?) {
                 when(view!!.id){
                     R.id.fStartStop -> startStopService()
+                    R.id.fCenter -> centerLocation()
                 }
             }
         }
+    }
+
+    /*метод центрирует экран на маршрут*/
+    private fun centerLocation(){
+        binding.map.controller.animateTo(mLocOverlay.myLocation)
+        mLocOverlay.enableFollowLocation()
     }
 
     /*Инициализация Observer-a MainViewModel.locationUpdates*/
@@ -141,6 +153,7 @@ class MainFragment : Fragment() {
                     3.6f * it.velocity
                 )
             } km/h"
+           // val velocity = "Velocity: ${String.format("%.1f", it.velocity)} m/s"
             val avgVelocity = "Average Velocity: ${getAverageSpeed(it.distance)} km/h"
             Log.d("MyLog", "Средняя скорость $avgVelocity")
 
@@ -301,6 +314,7 @@ class MainFragment : Fragment() {
         /*Проверять разрешения и GPS нужно тут, всякий раз,
         когда фрагмент возвращатеся в активное состояние после метода onPause()*/
         checkLocPermission()
+        firstStart = true
     }
 
     override fun onPause() {
@@ -323,7 +337,10 @@ class MainFragment : Fragment() {
     private fun initOSM() = with(binding){
         //Полилиния маршрута
         polyline = Polyline()
-        polyline?.outlinePaint?.color = Color.BLUE
+        polyline?.outlinePaint?.color = Color.parseColor(
+            PreferenceManager.getDefaultSharedPreferences(requireContext())
+            .getString("color_key", "#FF009EDA")
+        )
         //Зум на карте
         map.controller.setZoom(20.0)
 
@@ -331,7 +348,7 @@ class MainFragment : Fragment() {
         val mLocProvider = GpsMyLocationProvider(getActivity())
 
         //Слой, который отрисовывывает местоположениена карте MapView
-        val mLocOverlay = MyLocationNewOverlay(mLocProvider, map)
+        mLocOverlay = MyLocationNewOverlay(mLocProvider, map)
 
         //Включить определение местоположения устройства
         mLocOverlay.enableMyLocation()
@@ -344,11 +361,11 @@ class MainFragment : Fragment() {
 
             //Очистка всех слоёв
             map.overlays.clear()
-
-            //Добавить слои
-            map.overlays.add(mLocOverlay)
             //Добавить слой полилинию
             map.overlays.add(polyline)
+            //Добавить слои
+            map.overlays.add(mLocOverlay)
+
         }
 
         //показать нужную точку на карте
@@ -464,7 +481,11 @@ class MainFragment : Fragment() {
 
     /*Метод добавляет точки в список точек*/
     private fun addPoint(list: List<GeoPoint>){
-        polyline?.addPoint(list[list.size - 1])
+        if(list.isNotEmpty()){
+            polyline?.addPoint(list[list.size - 1])
+        }
+
+
     }
 
     /*Метод подгружает все точки после того, как приложение закрыли и заново открыли

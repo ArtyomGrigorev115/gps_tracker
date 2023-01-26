@@ -15,6 +15,7 @@ import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import androidx.preference.PreferenceManager
 import com.artyom.gpstracker_hdbh.MainActivity
 import com.artyom.gpstracker_hdbh.R
 import com.google.android.gms.location.*
@@ -42,6 +43,10 @@ class LocationService : Service() {
         //Коммуникационный канал с активностью
         return null
     }
+
+    /*Проверка на эмуляторе = true
+    * на устройстве = false*/
+    private var isDebug: Boolean = true
 
     /*
     * START_STICKY сервис перезапускается, после убийства системой в связи с нехваткой памяти.
@@ -96,14 +101,15 @@ class LocationService : Service() {
             if(lastLocation != null && currentLocation != null){
 
                //Todo: на эмуляторе со скоростью проблеммы. Пока без проверки скорости
-               /* if(currentLocation.speed > 0.2){
-                    *//*суммирование разнци между старым местоположением и новым. Тем местоположением, которое прило в метод*//*
-                    distance += lastLocation?.distanceTo(currentLocation ?: lastLocation) ?: 0.0f
-                }*/
+                if(currentLocation.speed > 0.4 || isDebug){
 
-                distance += lastLocation?.distanceTo(currentLocation ?: lastLocation) ?: 0.0f
-                //при каждом обновлении местоположения точка добавляется в список
-                geoPointsList.add(GeoPoint(currentLocation.latitude, currentLocation.longitude))
+                    //суммирование разнци между старым местоположением и новым. Тем местоположением, которое прило в метод
+                    distance += lastLocation?.distanceTo(currentLocation ?: lastLocation) ?: 0.0f
+                    //при каждом обновлении местоположения точка добавляется в список
+                    geoPointsList.add(GeoPoint(currentLocation.latitude, currentLocation.longitude))
+                }
+
+
 
                 val locModel = LocationModel(currentLocation.speed, distance, geoPointsList)
                 Log.d("MyLog", "Скорость в LocationService ${currentLocation.speed}")
@@ -168,13 +174,16 @@ class LocationService : Service() {
 
     /*инициализация объекта FusedLocationProviderClient и LocationRequest*/
     private fun initLocation(){
+
+        val updateInterval = PreferenceManager.getDefaultSharedPreferences(this).getString("update_time_key", "5000")?.toLong() ?: 5000
+
         locRequest = LocationRequest.create()
 
         /*интервал обновлений, который в настройках выберает пользователь*/
-        locRequest.interval = 5000
+        locRequest.interval = updateInterval
 
         /*Самый быстрый интервал обновления местоположения*/
-        locRequest.fastestInterval = 5000
+        locRequest.fastestInterval = updateInterval
 
         locRequest.priority = PRIORITY_HIGH_ACCURACY
 
