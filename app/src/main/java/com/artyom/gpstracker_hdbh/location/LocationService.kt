@@ -71,9 +71,6 @@ class LocationService : Service() {
         geoPointsList = ArrayList()
         Log.d("MyLog", "Сервис запустился: onCreate()")
         initLocation()
-
-
-
     }
 
     override fun onDestroy() {
@@ -103,24 +100,20 @@ class LocationService : Service() {
                //Todo: на эмуляторе со скоростью проблеммы. Пока без проверки скорости
                 if(currentLocation.speed > 0.4 || isDebug){
 
-                    //суммирование разнци между старым местоположением и новым. Тем местоположением, которое прило в метод
+                    //суммирование разнци между старым местоположением и новым.
+                    // Тем местоположением, которое прило в метод
                     distance += lastLocation?.distanceTo(currentLocation ?: lastLocation) ?: 0.0f
                     //при каждом обновлении местоположения точка добавляется в список
                     geoPointsList.add(GeoPoint(currentLocation.latitude, currentLocation.longitude))
                 }
-
-
 
                 val locModel = LocationModel(currentLocation.speed, distance, geoPointsList)
                 Log.d("MyLog", "Скорость в LocationService ${currentLocation.speed}")
 
                 sendLocData(locModel)
             }
-
-
             /*новое местоположение смартфона записать в старое местоположение*/
             lastLocation = currentLocation
-
 
             Log.d("MyLog", "Местоположение: ${locationResult.lastLocation?.latitude}")
             Log.d("MyLog", "Дистанция: $distance")
@@ -132,13 +125,8 @@ class LocationService : Service() {
     private fun sendLocData(locModel: LocationModel){
         val intent = Intent(LOC_MODEL_INTENT)
         intent.putExtra(LOC_MODEL_INTENT, locModel)
-
         LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(intent)
-
     }
-
-
-
 
     /*Запуск  сервиса  в приоритетном фоновом режиме
      * пользователь увидит уведмление, что сервис запущен.
@@ -149,7 +137,9 @@ class LocationService : Service() {
         * При помощи NotificationManager создать NotificationChannel*/
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
 
-            val nChannel: NotificationChannel = NotificationChannel(CHANNEL_ID, "Location Service",NotificationManager.IMPORTANCE_DEFAULT)
+            val nChannel: NotificationChannel = NotificationChannel(CHANNEL_ID,
+                "Location Service",
+                NotificationManager.IMPORTANCE_DEFAULT)
 
             val notificationManager = getSystemService(NotificationManager::class.java) as NotificationManager
             notificationManager.createNotificationChannel(nChannel)
@@ -169,13 +159,13 @@ class LocationService : Service() {
 
         /*Запуск  сервиса  в приоритетном фоновом режиме показвает уведомление*/
         startForeground(99,notification)
-
     }
 
     /*инициализация объекта FusedLocationProviderClient и LocationRequest*/
     private fun initLocation(){
 
-        val updateInterval = PreferenceManager.getDefaultSharedPreferences(this).getString("update_time_key", "5000")?.toLong() ?: 5000
+        val updateInterval = PreferenceManager.getDefaultSharedPreferences(this)
+            .getString("update_time_key", "5000")?.toLong() ?: 5000
 
         locRequest = LocationRequest.create()
 
@@ -220,15 +210,11 @@ class LocationService : Service() {
         )
     }
 
-
     companion object{
-
         const val LOC_MODEL_INTENT = "loc_intent"
         const val CHANNEL_ID = "channel_1"
         var isRunning = false
-
         /*Время запуска сервиса и таймера*/
         var startTime = 0L
     }
-
 }

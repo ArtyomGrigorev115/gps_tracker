@@ -32,7 +32,6 @@ class MainViewModel(db: MainDb) : ViewModel() {
         dao.deleteTrack(trackItem)
     }
 
-
     /*Статическая фабрика, котора создаёт MainViewModel с конструктором в который передаётся
     * экземпляр базы данных */
     @Suppress("UNCHECKED_CAST")
@@ -46,8 +45,6 @@ class MainViewModel(db: MainDb) : ViewModel() {
                 return MainViewModel(db) as T
             }
             throw IllegalArgumentException("Unknow ViewModel class")
-
         }
     }
-
 }

@@ -27,9 +27,11 @@ fun AppCompatActivity.openFragment(f: Fragment){
     Log.d("MyLog","Fragment name: ${f.javaClass}")
     Log.d("MyLog","Фрагменты в списке: ${supportFragmentManager.fragments.size}")
 
-    /*Проверка фрагментов, что бы запретить вызов одного и того же фрагмента бесконечное кол-во раз*/
+    /*Проверка фрагментов,
+    что бы запретить вызов одного и того же фрагмента бесконечное кол-во раз*/
     if(supportFragmentManager.fragments.isNotEmpty()){
-        /*Если названия фрагментов совпадают, то никакие фрагменты не открываем и выходим из метода*/
+        /*Если названия фрагментов совпадают,
+        то никакие фрагменты не открываем и выходим из метода*/
         if(supportFragmentManager.fragments[0].javaClass == f.javaClass){
             return
         }
